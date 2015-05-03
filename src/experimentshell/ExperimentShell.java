@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package experimentshell;
 
 import weka.classifiers.Classifier;
@@ -11,8 +6,8 @@ import weka.core.Debug.Random;
 import weka.core.converters.ConverterUtils.DataSource;
 import weka.core.Instances;
 import weka.filters.Filter;
+import weka.filters.unsupervised.attribute.Standardize;
 import weka.filters.unsupervised.instance.RemovePercentage;
-
 
 /**
  *
@@ -32,7 +27,7 @@ public class ExperimentShell {
         
         if (data.classIndex() == -1){
             data.setClassIndex(data.numAttributes() - 1);
-        }
+        }       
         
         data.randomize(new Random(1));
         
@@ -45,10 +40,17 @@ public class ExperimentShell {
         trainFilter.setInputFormat(data);
         Instances test = Filter.useFilter(data, trainFilter);
         
-        Classifier hcClassifier = new HardCodedClassifier();
-        hcClassifier.buildClassifier(train);
-        Evaluation eval = new Evaluation(train);
-        eval.evaluateModel(hcClassifier, test);
+        Standardize filter = new Standardize();
+        filter.setInputFormat(train);
+        
+        Instances newTest = Filter.useFilter(test, filter);
+        Instances newTrain = Filter.useFilter(train, filter);
+        //System.out.println(train);
+        
+        Classifier KNNclassifier = new KnnClassifier();
+        KNNclassifier.buildClassifier(newTrain);
+        Evaluation eval = new Evaluation(newTrain);
+        eval.evaluateModel(KNNclassifier, newTest);
         System.out.println(eval.toSummaryString("\nResults\n-------------\n", false));
         
     }
